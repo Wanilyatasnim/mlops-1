@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  train-and-deploy:
+  train-and-test:
     runs-on: ubuntu-latest
     
     steps:
@@ -26,6 +26,19 @@ jobs:
       - name: Run training script
         run: |
           python src/train.py
+      
+      - name: Build Docker image (test)
+        run: |
+          docker build -t mlops-api:test .
+
+  deploy:
+    needs: train-and-test
+    runs-on: ubuntu-latest
+    if: ${{ secrets.GCP_SA_KEY != '' && secrets.GCP_PROJECT_ID != '' && secrets.GCP_REGION != '' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
