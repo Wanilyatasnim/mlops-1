@@ -237,12 +237,79 @@ The service exposes Prometheus metrics at `/metrics` endpoint:
 
 You can scrape these metrics with Prometheus or any compatible monitoring tool.
 
+## 📊 Monitoring with Prometheus & Grafana
+
+### Local Setup
+
+1. **Start Prometheus and Grafana**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Access Grafana**:
+   - URL: http://localhost:3000
+   - Username: `admin`
+   - Password: `admin`
+
+3. **Configure Prometheus Data Source in Grafana**:
+   - Go to Configuration → Data Sources → Add data source
+   - Select Prometheus
+   - URL: `http://prometheus:9090` (or `http://localhost:9090`)
+   - Click "Save & Test"
+
+4. **Create Dashboards**:
+   - Import dashboard or create custom panels
+   - Key metrics to monitor:
+     - `http_requests_total` - Request count by endpoint and status
+     - `http_request_duration_seconds` - Request latency histogram
+     - `predictions_total` - Total predictions made
+     - `prediction_errors_total` - Prediction errors
+
+5. **View Prometheus UI**:
+   - URL: http://localhost:9090
+   - Query metrics directly
+
+### Stop Monitoring Services
+```bash
+docker-compose down
+```
+
+## 📦 Model Storage Strategy
+
+### Current Setup (Local/Demo)
+- Model is stored in `artifacts/model.pkl` and committed to the repository
+- Suitable for small models and demos
+
+### Production Setup (Cloud Storage)
+To use Google Cloud Storage (GCS) for model storage:
+
+1. **Set up GCS bucket** and configure secrets in GitHub:
+   - `GCS_BUCKET_NAME`: Your GCS bucket name
+   - `GCP_SA_KEY`: Service account JSON key
+
+2. **Uncomment GCS upload step** in `.github/workflows/ci.yml`
+
+3. **Configure FastAPI to load from GCS**:
+   ```bash
+   export MODEL_GCS_PATH=gs://your-bucket/models/model-latest.pkl
+   ```
+
+4. **Install GCS client** (optional, only if using GCS):
+   ```bash
+   pip install google-cloud-storage
+   ```
+
+The FastAPI app will automatically:
+- Try to load from GCS if `MODEL_GCS_PATH` is set
+- Fall back to local `artifacts/model.pkl` if GCS is not configured
+
 ## 📝 Notes
 
 - The model artifact (`artifacts/model.pkl`) must be generated before running the API
 - The training script automatically creates the `artifacts/` directory
 - For production deployment, ensure the model artifact is included in the Docker image
 - The CI/CD pipeline runs training on every push, ensuring the model is always up-to-date
+- For production, consider using cloud storage (GCS/S3) for model artifacts
 
 ## 🤝 Contributing
 

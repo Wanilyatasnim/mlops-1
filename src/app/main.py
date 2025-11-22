@@ -39,7 +39,36 @@ async def load_model():
     """Load the trained model and scaler at startup."""
     global model_data
     
-    # Get the project root directory (parent of src/)
+    # Option 1: Load from GCS if MODEL_GCS_PATH is set
+    model_gcs_path = os.getenv("MODEL_GCS_PATH")
+    if model_gcs_path:
+        try:
+            from google.cloud import storage
+            print(f"Loading model from GCS: {model_gcs_path}")
+            # Parse GCS path: gs://bucket-name/path/to/model.pkl
+            bucket_name = model_gcs_path.split("/")[2]
+            blob_path = "/".join(model_gcs_path.split("/")[3:])
+            
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(blob_path)
+            
+            # Download to temporary file
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pkl") as tmp_file:
+                blob.download_to_filename(tmp_file.name)
+                with open(tmp_file.name, "rb") as f:
+                    model_data = pickle.load(f)
+                os.unlink(tmp_file.name)
+            
+            print(f"Model loaded successfully from GCS: {model_gcs_path}!")
+            return
+        except ImportError:
+            print("Warning: google-cloud-storage not installed. Falling back to local model.")
+        except Exception as e:
+            print(f"Error loading from GCS: {e}. Falling back to local model.")
+    
+    # Option 2: Load from local artifacts directory (default)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(current_dir))
     model_path = os.path.join(project_root, "artifacts", "model.pkl")
@@ -47,7 +76,7 @@ async def load_model():
     if not os.path.exists(model_path):
         raise FileNotFoundError(
             f"Model file not found at {model_path}. "
-            "Please run train.py first to generate the model."
+            "Please run train.py first to generate the model, or set MODEL_GCS_PATH environment variable."
         )
     
     with open(model_path, "rb") as f:
