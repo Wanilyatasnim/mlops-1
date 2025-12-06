@@ -23,6 +23,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
+      - name: Run tests
+        run: |
+          pytest tests/ -v
+      
       - name: Run training script
         run: |
           python src/train.py
