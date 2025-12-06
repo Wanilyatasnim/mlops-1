@@ -237,6 +237,53 @@ The service exposes Prometheus metrics at `/metrics` endpoint:
 
 You can scrape these metrics with Prometheus or any compatible monitoring tool.
 
+## 📝 Logging
+
+The application includes comprehensive logging for production observability:
+
+### Log Levels
+- **INFO**: Normal operations (model loading, predictions, training progress)
+- **WARNING**: Slow predictions, health check failures, fallback scenarios
+- **ERROR**: Prediction errors, model loading failures
+- **DEBUG**: Detailed debugging information (set `LOG_LEVEL=DEBUG`)
+
+### What's Logged
+
+**Training Script (`src/train.py`)**:
+- Dataset loading progress
+- Training pipeline steps
+- Model evaluation metrics (RMSE)
+- Model saving operations
+- Total training time
+
+**API Service (`src/app/main.py`)**:
+- Model loading (startup) with timing
+- Prediction requests with feature counts
+- Prediction results and latency
+- Slow prediction warnings (>0.5s, >1.0s thresholds)
+- Error details with stack traces
+- Health check failures
+
+### Configure Logging
+
+Set the `LOG_LEVEL` environment variable:
+```bash
+export LOG_LEVEL=DEBUG  # For detailed debugging
+export LOG_LEVEL=INFO   # Default, production-ready
+export LOG_LEVEL=WARNING # Only warnings and errors
+```
+
+### Example Log Output
+
+```
+2025-12-06 14:31:35 - app.main - INFO - Starting model loading process...
+2025-12-06 14:31:35 - app.main - INFO - Loading model from local path: artifacts/model.pkl
+2025-12-06 14:31:35 - app.main - INFO - Model loaded successfully in 0.023s
+2025-12-06 14:31:40 - app.main - INFO - Received prediction request with 8 features
+2025-12-06 14:31:40 - app.main - INFO - Prediction successful: 4.1518 (latency: 0.001s)
+2025-12-06 14:31:45 - app.main - WARNING - Prediction latency above average: 0.652s
+```
+
 ## 📊 Monitoring with Prometheus & Grafana
 
 ### Local Setup
