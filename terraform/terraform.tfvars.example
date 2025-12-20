@@ -1,0 +1,9 @@
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is in .gitignore and should not be committed
+
+gcp_project_id  = "your-gcp-project-id"
+gcp_region      = "us-central1"
+gcp_zone        = "us-central1-a"
+docker_registry = "docker.io"
+docker_username = "your-docker-username"
+

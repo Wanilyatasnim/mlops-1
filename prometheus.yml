@@ -3,11 +3,30 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'ml-service'
+  # API Gateway metrics
+  - job_name: 'api-gateway'
     static_configs:
-      - targets: ['host.docker.internal:8080']  # On Linux, use 'localhost:8080' or '172.17.0.1:8080'
+      - targets: ['api-gateway:8080']
     metrics_path: '/metrics'
     scrape_interval: 5s
 
+  # ML Service metrics
+  - job_name: 'ml-service'
+    static_configs:
+      - targets: ['ml-service:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
 
+  # User Service metrics
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['user-service:8082']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
 
+  # Notification Service metrics
+  - job_name: 'notification-service'
+    static_configs:
+      - targets: ['notification-service:8083']
+    metrics_path: '/metrics'
+    scrape_interval: 5s

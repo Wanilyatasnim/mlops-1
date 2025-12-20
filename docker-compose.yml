@@ -1,6 +1,72 @@
 version: '3.8'
 
 services:
+  # API Gateway - Entry point for all requests
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: mlops-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - ML_SERVICE_URL=http://ml-service:8081
+      - USER_SERVICE_URL=http://user-service:8082
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8083
+      - LOG_LEVEL=INFO
+    depends_on:
+      - ml-service
+      - user-service
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+  # ML Service - Machine Learning predictions
+  ml-service:
+    build:
+      context: ./services/ml-service
+      dockerfile: Dockerfile
+    container_name: mlops-ml-service
+    ports:
+      - "8081:8081"
+    environment:
+      - MODEL_PATH=/app/artifacts/model.pkl
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+  # User Service - User management and authentication
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: mlops-user-service
+    ports:
+      - "8082:8082"
+    environment:
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+  # Notification Service - Email, SMS, and Push notifications
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: mlops-notification-service
+    ports:
+      - "8083:8083"
+    environment:
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+  # Prometheus - Metrics collection
   prometheus:
     image: prom/prometheus:latest
     container_name: mlops-prometheus
@@ -12,8 +78,16 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - api-gateway
+      - ml-service
+      - user-service
+      - notification-service
     restart: unless-stopped
+    networks:
+      - mlops-network
 
+  # Grafana - Metrics visualization
   grafana:
     image: grafana/grafana:latest
     container_name: mlops-grafana
@@ -27,10 +101,13 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+    networks:
+      - mlops-network
 
 volumes:
   prometheus_data:
   grafana_data:
 
-
-
+networks:
+  mlops-network:
+    driver: bridge

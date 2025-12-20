@@ -50,3 +50,14 @@ Thumbs.db
 # Docker
 .dockerignore
 
+# Terraform
+terraform/.terraform/
+terraform/**/*.tfstate
+terraform/**/*.tfstate.*
+terraform/**/*.tfvars
+terraform/.terraformrc
+terraform/terraform.rc
+
+# Old files (to be removed)
+src/app/
+Dockerfile

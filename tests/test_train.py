@@ -14,8 +14,8 @@ from sklearn.metrics import mean_squared_error
 
 # Import the training function
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from src.train import train_model
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'training'))
+from train import train_model
 
 
 def test_train_model_creates_artifact():

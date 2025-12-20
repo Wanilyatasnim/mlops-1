@@ -11,12 +11,12 @@ import sys
 model_path = os.path.join(os.path.dirname(__file__), '..', 'artifacts', 'model.pkl')
 if not os.path.exists(model_path):
     # Run training if model doesn't exist
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-    from src.train import train_model
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'training'))
+    from train import train_model
     train_model()
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Add services to path for testing
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'services', 'ml-service', 'src'))
 
 # Import app and manually trigger startup to ensure model loads
 from app.main import app, load_model
